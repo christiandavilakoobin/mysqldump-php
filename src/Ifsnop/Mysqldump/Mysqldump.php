@@ -706,8 +706,9 @@ class Mysqldump
      */
     private function exportTables()
     {
-
-
+        if ($this->infoCallable) {
+            call_user_func($this->infoCallable, 'export', array('name' => 'begin', 'rowCount' => count($this->tables)));
+        }
         // Exporting tables one by one
         foreach ($this->tables as $table) {
             if ($this->matches($table, $this->dumpSettings['exclude-tables'])) {
@@ -1969,8 +1970,8 @@ class TypeAdapterMysql extends TypeAdapterFactory
             $createTable = preg_replace($match, $replace, $createTable);
         }
 
-		if ($this->dumpSettings['if-not-exists'] ) {
-			$createTable = preg_replace('/^CREATE TABLE/', 'CREATE TABLE IF NOT EXISTS', $createTable);
+        if ($this->dumpSettings['if-not-exists'] ) {
+                $createTable = preg_replace('/^CREATE TABLE/', 'CREATE TABLE IF NOT EXISTS', $createTable);
         }
 
         $ret = "/*!40101 SET @saved_cs_client     = @@character_set_client */;".PHP_EOL.
