@@ -1175,7 +1175,6 @@ class Mysqldump
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
         $replace = $this->dumpSettings['replace']  && $this->getHasPrimaryKey($tableName);
-        $strUpdates = $replace ? $this->getUpdateColumnsOnDuplicate($tableName) : '';
         $extendedInsert = $this->dumpSettings['extended-insert'] && !$replace;
         $ignore = $this->dumpSettings['insert-ignore'] && !$replace ? '  IGNORE' : '';
 
@@ -1195,9 +1194,12 @@ class Mysqldump
                         "INSERT$ignore INTO `$tableName` VALUES (".implode(",", $vals).")"
                     );
                 }
+
                 if ($replace) {
+                    $strUpdates = $this->getUpdateColumnsOnDuplicate($tableName, $row);
                     $lineSize += $this->compressManager->write(" ON DUPLICATE KEY UPDATE {$strUpdates}");
                 }
+
                 $onlyOnce = false;
             } else {
                 $lineSize += $this->compressManager->write(",(".implode(",", $vals).")");
@@ -1241,15 +1243,16 @@ class Mysqldump
      * Build SQL List of all non-primary key columns on current table which will be used for update on duplicate key
      *
      * @param string $tableName Name of table to get columns
+     * @param array $row Row with all values
      *
      * @return string update columns for sql sentence where update on duplicate key
      */
-    public function getUpdateColumnsOnDuplicate($tableName)
+    public function getUpdateColumnsOnDuplicate($tableName, $row)
     {
         $colUpdates = array();
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
             if ($colType['key_sql'] != 'PRI') {
-                $colUpdates[] = "`${colName}`=`${colName}`";
+                $colUpdates[] = "`${colName}`=" . $this->escape($row[$colName], $colType);
             }
         }
         return implode(',',$colUpdates);
