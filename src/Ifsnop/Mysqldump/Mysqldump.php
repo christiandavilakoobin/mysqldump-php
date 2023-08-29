@@ -298,6 +298,7 @@ class Mysqldump
         }
 
         $buffer = '';
+        $delimiter = ";";
         while ( !feof($handle) ) {
             $line = trim(fgets($handle));
 
@@ -305,13 +306,21 @@ class Mysqldump
                 continue; // skip comments
             }
 
-            $buffer .= $line;
+                if (strcasecmp(substr($line, 0, 9), "DELIMITER") === 0)
+                {
+                        $delimiter = substr($line, 10);
+                }
+                else
+                {
+                        $buffer .= " " . $line;
 
-            // if it has a semicolon at the end, it's the end of the query
-            if (';' == substr(rtrim($line), -1, 1)) {
-                $this->dbHandler->exec($buffer);
-                $buffer = '';
-            }
+                        // if it has a semicolon at the end, it's the end of the query
+                        if (substr(trim($line), strlen($delimiter) * -1, strlen($delimiter)) == $delimiter)
+                        {
+                                $this->dbHandler->exec($buffer);
+                                $buffer = '';
+                        }
+                }
         }
 
         fclose($handle);
