@@ -1261,7 +1261,7 @@ class Mysqldump
         $colUpdates = array();
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
             if ($colType['key_sql'] != 'PRI') {
-                $colUpdates[] = "`${colName}`=" . $this->escape($row[$colName], $colType);
+                $colUpdates[] = "`{$colName}`=" . $this->escape($row[$colName], $colType);
             }
         }
         return implode(',',$colUpdates);
