@@ -1210,7 +1210,7 @@ class Mysqldump
                 $line .= ",(".implode(",", $vals).")";
             }
             if ((strlen($line) > $this->dumpSettings['net_buffer_length']) ||
-                    !$this->dumpSettings['extended-insert']) {
+                    !$extendedInsert) {
                 $onlyOnce = true;
                 $this->compressManager->write($line . ";".PHP_EOL);
                 $line = '';
